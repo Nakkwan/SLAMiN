@@ -14,13 +14,16 @@ import torch.utils.data as data
 from PIL import Image
 from torch.utils.data import DataLoader
 import cv2
-
+import pandas as pd
 
 ## TODO: choose with or without transformation at test mode
 class Dataset(data.Dataset):
-    def __init__(self, gt_file, structure_file, config, mask_file=None):
+    def __init__(self, gt_file, structure_file, config, mask_file=None, landmark_file=None):
         self.gt_image_files = self.load_file_list(gt_file)
         self.structure_image_files = self.load_file_list(structure_file)
+        self.x_idx = [1, 3, 5, 7, 9]
+        self.y_idx = [2, 4, 6, 8, 10]
+        self.landmark_num = config.STRUCTURE_LANDMARK_NUM
 
         if len(self.gt_image_files) == 0:
             raise(RuntimeError("Found 0 images in the input files " + "\n"))
@@ -43,6 +46,8 @@ class Dataset(data.Dataset):
         # read masks from files
         elif self.mask_type == 'from_file':
             self.mask_image_files = self.load_file_list(mask_file)
+            
+        self.csvfile = pd.read_csv(landmark_file)
 
     def __getitem__(self, index):
         try:
@@ -85,8 +90,10 @@ class Dataset(data.Dataset):
 
         inpaint_map = self.load_mask(index, gt_image)
         input_image = gt_image*(1-inpaint_map)
+        
+        landmark_points = self.load_landmark(index+1, self.csvfile)
 
-        return input_image, structure_image, gt_image, inpaint_map
+        return input_image, structure_image, gt_image, inpaint_map, landmark_points
 
 
     def load_mask(self, index, img):
@@ -121,6 +128,19 @@ class Dataset(data.Dataset):
         else:
             raise(RuntimeError("No such mask type: %s"%self.mask_type))
 
+############################################################ fix #####################################################################
+
+    def load_landmark(self, index, csvfile):
+        df = csvfile.iloc[index]
+        x_coord = df.values[self.x_idx]
+        y_coord = df.values[self.y_idx]
+        
+        landmark_points = np.concatenate([x_coord, y_coord]).reshape(2, self.landmark_num).T
+        
+        return torch.Tensor(landmark_points)
+
+############################################################ fix #####################################################################
+
     def load_name(self, index, add_mask_name=False):
         name = self.gt_image_files[index]
         name = os.path.basename(name) 
@@ -150,6 +170,7 @@ class Dataset(data.Dataset):
             for item in sample_loader:
                 yield item 
                 
+        
 
 def random_bbox(config, shape):
     """Generate a random tlhw with configuration.

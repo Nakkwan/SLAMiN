@@ -66,11 +66,11 @@ class StructureFlow():
             progbar = Progbar(total, width=20, stateful_metrics=['epoch', 'iter'])
 
             for items in train_loader:
-                inputs, smooths, gts, maps = self.cuda(*items)
+                inputs, smooths, gts, maps, landmark = self.cuda(*items)
 
                 # structure model
                 if model == 1:
-                    logs = self.flow_model.update_structure(inputs, smooths, maps)
+                    logs = self.flow_model.update_structure(inputs, smooths, maps, landmark)
                     iterations = self.flow_model.iterations
                 # flow model
                 elif model == 2:
