@@ -39,7 +39,7 @@ def perpare_sub_floder(output_path):
 def cuda(config, *args):
         return (item.to(config.DEVICE) for item in args)
     
-os.environ['CUDA_VISIBLE_DEVICES'] = ''.join(str(e) for e in config.GPU)
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 def main():
     config = load_config()
