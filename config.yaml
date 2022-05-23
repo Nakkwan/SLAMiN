@@ -62,3 +62,6 @@ DATA_VAL_STRUCTURE: datasets/validation
 DATA_VAL_MASK: 
 
 
+LANDMARK_EPOCH: 200
+LANDMARK_VERSION: 0
+LANDMARK_PATH: 'landmark_sample'

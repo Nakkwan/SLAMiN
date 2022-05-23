@@ -118,7 +118,7 @@ class FlowGen(nn.Module):
 ############################################################ fix #####################################################################
 
 class LandmarkDetectorModel(nn.Module):
-    def __init__(self, point_num=68, size=256):
+    def __init__(self, point_num=5, size=256):
         super(LandmarkDetectorModel, self).__init__()
         self.mbnet = MobileNetV2(points_num=point_num)
         self.name = 'landmark_detector'
@@ -161,12 +161,11 @@ class LandmarkDetectorModel(nn.Module):
         
         return landmark_gen
 
-    def process(self, images, masks, landmark_gt):
+    def process(self, images, landmark_gt):
         self.iteration += 1
         self.optimizer.zero_grad()
 
-        images_masked = images*(1-masks)+masks
-        landmark_gen = self(images_masked, masks)
+        landmark_gen = self(images)
 
         loss = loss_landmark(landmark_gt.float(),landmark_gen, points_num=self.point_num)
 
