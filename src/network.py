@@ -118,9 +118,10 @@ class FlowGen(nn.Module):
 ############################################################ fix #####################################################################
 
 class LandmarkDetectorModel(nn.Module):
-    def __init__(self, point_num=5, size=256):
+    def __init__(self, config, point_num=5, size=256):
         super(LandmarkDetectorModel, self).__init__()
         self.mbnet = MobileNetV2(points_num=point_num)
+        self.mbnet = self.mbnet.to(config.DEVICE)
         self.name = 'landmark_detector'
         self.iteration = 0
         self.point_num = point_num
@@ -582,7 +583,7 @@ class InvertedResidual(nn.Module):
             return self.conv(x)
 
 class MobileNetV2(nn.Module):
-    def __init__(self,input_size=256, width_mult=1., points_num=68):
+    def __init__(self,input_size=256, width_mult=1., points_num=5):
         super(MobileNetV2, self).__init__()
         block = InvertedResidual
         input_channel = 32

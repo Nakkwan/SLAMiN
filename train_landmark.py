@@ -12,7 +12,7 @@ def load_config():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('--name', type=str, help='output model name.')
-    parser.add_argument('--config', type=str, default='model_config.yaml', help='Path to the config file.')
+    parser.add_argument('--config', type=str, default='config.yaml', help='Path to the config file.')
     parser.add_argument('--path', type=str, default='./results', help='outputs path')
     parser.add_argument("--resume_all", action="store_true", help='load model from checkpoints')
     parser.add_argument("--remove_log", action="store_true", help='remove previous tensorboard log files')
@@ -44,16 +44,20 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 def main():
     config = load_config()
     os.makedirs(os.path.join(config.LANDMARK_PATH, config.LANDMARK_VERSION), exist_ok=True)
-    USE_CUDA = torch.cuda.is_available()
-    device = torch.device('cuda:0' if USE_CUDA else 'cpu')
+    if torch.cuda.is_available():
+        config.DEVICE = torch.device("cuda")
+        torch.backends.cudnn.benchmark = True   # cudnn auto-tuner
+    else:
+        config.DEVICE = torch.device("cpu")
+        
     
-    train_dataset = Dataset(config.config.DATA_TRAIN_GT, config.config.DATA_TRAIN_STRUCTURE, 
-                                config.config, config.config.DATA_MASK_FILE)
-    train_loader = DataLoader(dataset=train_dataset, batch_size=config.config.TRAIN_BATCH_SIZE, 
+    train_dataset = Dataset(config.DATA_TRAIN_GT, config.DATA_TRAIN_STRUCTURE, 
+                                config, landmark_file=config.DATA_TRAIN_LANDMARK)
+    train_loader = DataLoader(dataset=train_dataset, batch_size=config.TRAIN_BATCH_SIZE, 
                                 shuffle=True, drop_last=True, num_workers=8)  
     
-    model = LandmarkDetectorModel(config.STRUCTURE_LANDMARK_NUM, config.DATA_TRAIN_SIZE)
-    model = model.to(device)
+    model = LandmarkDetectorModel(config, config.STRUCTURE_LANDMARK_NUM, config.DATA_TRAIN_SIZE)
+    model = model.to(config.DEVICE)
     
     for epoch in range(config.LANDMARK_EPOCH):
         for (iter, input) in enumerate(train_loader):
