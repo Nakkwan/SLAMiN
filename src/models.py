@@ -17,7 +17,7 @@ class StructureFlowModel(BaseModel):
 
         self.structure_param = {'input_dim':3, 'dim':64, 'n_res':4, 'activ':'relu', 
                          'norm':'in', 'pad_type':'reflect', 'use_sn':True}
-        self.land_param =  {'point_num':68, 'size':256}
+        self.land_param =  {'point_num':5, 'size':256}
         
         self.flow_param = {'input_dim':3, 'dim':64, 'n_res':2, 'activ':'relu', 
                          'norm_conv':'ln', 'norm_flow':'in', 'pad_type':'reflect', 'use_sn':False}
@@ -129,15 +129,18 @@ class StructureFlowModel(BaseModel):
         self.structure_l1_loss = self.l1_loss(outputs, smooths) * self.config.STRUCTURE_L1
         
 ############################################################ fix #####################################################################
-        mask_weight = gaussian_filter(maps, sigma=self.config.STRUCTURE_SIGMA)
+        mask_weight = gaussian_filter(maps.cpu(), sigma=self.config.STRUCTURE_SIGMA)
+        mask_weight = torch.from_numpy(mask_weight).to(self.config.DEVICE)
         structure_l1_loss_weight = mask_weight * self.l1_loss_weight(outputs, smooths)
         self.structure_l1_loss_weight = structure_l1_loss_weight.mean() * self.config.STRUCTURE_L1_WEIGHT
         
         with torch.no_grad():
             output_land = self.s_land(outputs)
+            
+        print('shape output_land: {}'.format(output_land.shape))
+        print('shape landmarks: {}'.format(landmarks.shape))
         self.landmark_loss = torch.norm((landmarks-output_land).reshape(-1,self.s_land.point_num*2),2,dim=1,keepdim=True) * self.config.STRUCTURE_LANDMARK
 ############################################################ fix #####################################################################
-
         self.structure_gen_loss = self.structure_l1_loss + self.structure_adv_gen_loss + self.structure_l1_loss_weight + self.landmark_loss
 
         self.structure_gen_loss.backward()

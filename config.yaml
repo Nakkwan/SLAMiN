@@ -36,7 +36,7 @@ VGG_STYLE: 250                # texture net parameter of vgg_style loss (Optiona
 VGG_CONTENT: 0.1              # texture net parameter of vgg_content loss (Optional loss on stage_3) 
 
 
-TRAIN_BATCH_SIZE: 8           # batch size
+TRAIN_BATCH_SIZE: 1           # batch size
 DATA_TRAIN_SIZE: 256          # image size for training 
 DATA_TEST_SIZE: False         # image size for testing (False for never resize)
 DATA_FLIP: False              # filp image or not when training 
@@ -56,7 +56,7 @@ DATA_MASK_FILE: ./txt/irregular_mask.txt #parameters for from_file
 
 DATA_TRAIN_GT: datasets/img_align_celeba
 DATA_TRAIN_STRUCTURE: datasets/img_align_celeba
-DATA_TRAIN_LANDMARK: datasets/img_align_celeba/list_landmarks_align_celeba.csv
+DATA_TRAIN_LANDMARK: datasets/list_landmarks_align_celeba.csv
 DATA_VAL_GT: datasets/validation
 DATA_VAL_STRUCTURE: datasets/validation
 DATA_VAL_MASK: 

@@ -46,8 +46,11 @@ class Dataset(data.Dataset):
         # read masks from files
         elif self.mask_type == 'from_file':
             self.mask_image_files = self.load_file_list(mask_file)
-            
-        self.csvfile = pd.read_csv(landmark_file)
+        
+        if landmark_file is not None:
+            self.csvfile = pd.read_csv(landmark_file)
+        else:
+            self.csvfile = None
 
     def __getitem__(self, index):
         try:
@@ -91,8 +94,11 @@ class Dataset(data.Dataset):
         inpaint_map = self.load_mask(index, gt_image)
         input_image = gt_image*(1-inpaint_map)
         
-        landmark_points = self.load_landmark(index+1, self.csvfile)
-
+        if self.csvfile is not None:
+            landmark_points = self.load_landmark(index+1, self.csvfile)
+        else:
+            landmark_points = None
+            
         return input_image, structure_image, gt_image, inpaint_map, landmark_points
 
 
@@ -135,9 +141,13 @@ class Dataset(data.Dataset):
         x_coord = df.values[self.x_idx]
         y_coord = df.values[self.y_idx]
         
-        landmark_points = np.concatenate([x_coord, y_coord]).reshape(2, self.landmark_num).T
+        landmark_points = np.concatenate([x_coord, y_coord]).reshape(2, self.landmark_num).T.astype(np.float)
         
-        return torch.Tensor(landmark_points)
+        if landmark_points.dtype == 'object':
+            print(type(landmark_points))
+            print(landmark_points)
+        
+        return torch.from_numpy(landmark_points)
 
 ############################################################ fix #####################################################################
 

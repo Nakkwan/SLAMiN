@@ -13,8 +13,8 @@ from itertools import islice
 from torch.utils.data import DataLoader
 from .data import Dataset
 from .utils import Progbar, write_2images, write_2tensorboard, create_dir, imsave
-from skimage.measure import compare_ssim
-from skimage.measure import compare_psnr
+from skimage.metrics import structural_similarity as ssim
+from skimage.metrics import peak_signal_noise_ratio as psnr
 from .models import StructureFlowModel
 
 
@@ -43,12 +43,12 @@ class StructureFlow():
     def train(self):
         train_writer = self.obtain_log(self.config)
         train_dataset = Dataset(self.config.DATA_TRAIN_GT, self.config.DATA_TRAIN_STRUCTURE, 
-                                self.config, self.config.DATA_MASK_FILE)
+                                self.config, landmark_file=self.config.DATA_TRAIN_LANDMARK)
         train_loader = DataLoader(dataset=train_dataset, batch_size=self.config.TRAIN_BATCH_SIZE, 
                                   shuffle=True, drop_last=True, num_workers=8)  
 
         val_dataset = Dataset(self.config.DATA_VAL_GT, self.config.DATA_VAL_STRUCTURE, 
-                              self.config, self.config.DATA_MASK_FILE)
+                              self.config)
         sample_iterator = val_dataset.create_iterator(self.config.SAMPLE_SIZE)
 
 
@@ -101,7 +101,7 @@ class StructureFlow():
                 # sample model 
                 if self.config.SAMPLE_INTERVAL and iterations % self.config.SAMPLE_INTERVAL == 0:
                     items = next(sample_iterator)
-                    inputs, smooths, gts, maps = self.cuda(*items)
+                    inputs, smooths, gts, maps, _ = self.cuda(*items)
                     result,flow = self.flow_model.sample(inputs, smooths, gts, maps)
                     self.write_image(result, train_writer, iterations, 'image')
                     self.write_image(flow,   train_writer, iterations, 'flow')
@@ -283,12 +283,12 @@ class StructureFlow():
         for i in range(inputs.size(0)):
             inputs_p = inputs[i,:,:,:].cpu().numpy().astype(np.float32).transpose(1,2,0)
             gts_p = gts[i,:,:,:].cpu().numpy().astype(np.float32).transpose(1,2,0)
-            psnr_value.append(compare_psnr(inputs_p, gts_p, data_range=1))
+            psnr_value.append(psnr(inputs_p, gts_p, data_range=1))
 
         psnr_value = np.average(psnr_value)            
         inputs = inputs.view(b*n, w, h).cpu().numpy().astype(np.float32).transpose(1,2,0)
         gts = gts.view(b*n, w, h).cpu().numpy().astype(np.float32).transpose(1,2,0)
-        ssim_value = compare_ssim(inputs, gts, data_range=1, win_size=51, multichannel=True)
+        ssim_value = ssim(inputs, gts, data_range=1, win_size=51, multichannel=True)
         return psnr_value, ssim_value, l1_value
 
 

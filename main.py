@@ -4,6 +4,7 @@ import argparse
 import shutil 
 from src.config import Config
 from src.structure_flow import StructureFlow
+from multiprocessing import Process, freeze_support
 
 def main(mode=None):
     r"""starts the model
@@ -13,7 +14,7 @@ def main(mode=None):
 
     config = load_config(mode)
     config.MODE = mode
-    os.environ['CUDA_VISIBLE_DEVICES'] = ''.join(str(e) for e in config.GPU)
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
     if torch.cuda.is_available():
         config.DEVICE = torch.device("cuda")
@@ -42,7 +43,7 @@ def load_config(mode=None):
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('--name', type=str, help='output model name.')
-    parser.add_argument('--config', type=str, default='model_config.yaml', help='Path to the config file.')
+    parser.add_argument('--config', type=str, default='config.yaml', help='Path to the config file.')
     parser.add_argument('--path', type=str, default='./results', help='outputs path')
     parser.add_argument("--resume_all", action="store_true", help='load model from checkpoints')
     parser.add_argument("--remove_log", action="store_true", help='remove previous tensorboard log files')
@@ -81,4 +82,5 @@ def perpare_sub_floder(output_path):
     
 
 if __name__ == "__main__":
-    main()
+    freeze_support()
+    main('train')
