@@ -96,10 +96,10 @@ class Dataset(data.Dataset):
         
         if self.csvfile is not None:
             landmark_points = self.load_landmark(index+1, self.csvfile)
+            return input_image, structure_image, gt_image, inpaint_map, landmark_points
+        
         else:
-            landmark_points = None
-            
-        return input_image, structure_image, gt_image, inpaint_map, landmark_points
+            return input_image, structure_image, gt_image, inpaint_map
 
 
     def load_mask(self, index, img):
@@ -142,10 +142,6 @@ class Dataset(data.Dataset):
         y_coord = df.values[self.y_idx]
         
         landmark_points = np.concatenate([x_coord, y_coord]).reshape(2, self.landmark_num).T.astype(np.float)
-        
-        if landmark_points.dtype == 'object':
-            print(type(landmark_points))
-            print(landmark_points)
         
         return torch.from_numpy(landmark_points)
 

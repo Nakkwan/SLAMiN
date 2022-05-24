@@ -101,7 +101,7 @@ class StructureFlow():
                 # sample model 
                 if self.config.SAMPLE_INTERVAL and iterations % self.config.SAMPLE_INTERVAL == 0:
                     items = next(sample_iterator)
-                    inputs, smooths, gts, maps, _ = self.cuda(*items)
+                    inputs, smooths, gts, maps = self.cuda(*items)
                     result,flow = self.flow_model.sample(inputs, smooths, gts, maps)
                     self.write_image(result, train_writer, iterations, 'image')
                     self.write_image(flow,   train_writer, iterations, 'flow')
