@@ -95,7 +95,7 @@ class Dataset(data.Dataset):
         input_image = gt_image*(1-inpaint_map)
         
         if self.csvfile is not None:
-            landmark_points = self.load_landmark(index+1, self.csvfile)
+            landmark_points = self.load_landmark(index, self.csvfile)
             return input_image, structure_image, gt_image, inpaint_map, landmark_points
         
         else:
