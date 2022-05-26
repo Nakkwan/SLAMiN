@@ -89,7 +89,7 @@ def main():
     
     for epoch in range(config.LANDMARK_EPOCH):
         for (iter, input) in enumerate(train_loader):
-            inputs, _, _, _, landmark = cuda(config, *input)
+            _, _, inputs, _, landmark = cuda(config, *input)
             
             landmark_gen, loss, logs = model.process(inputs, landmark)
             model.backward(loss)
