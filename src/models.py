@@ -64,7 +64,7 @@ class StructureFlowModel(BaseModel):
         self.init()
         
         if self.config.MODEL == 1:
-            self.s_land.load(path=self.config.PRETRAINED_LANDMARK_PATH)
+            self.s_land.load(self.config.PRETRAINED_LANDMARK_PATH)
             self.s_land.eval()
 
 
@@ -141,7 +141,7 @@ class StructureFlowModel(BaseModel):
         with torch.no_grad(): ######################## ? ########
             output_land = self.s_land(outputs)
             
-        self.landmark_loss = torch.norm((landmarks-output_land).reshape(-1,self.s_land.point_num*2),2,dim=1,keepdim=True) * self.config.STRUCTURE_LANDMARK
+        self.landmark_loss = torch.norm((landmarks-output_land).reshape(-1,self.s_land.point_num*2),2,dim=1,keepdim=False) * self.config.STRUCTURE_LANDMARK
 ############################################################ fix #####################################################################
         self.structure_gen_loss = self.structure_l1_loss + self.structure_adv_gen_loss + self.structure_l1_loss_weight + self.landmark_loss
 
