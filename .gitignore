@@ -5,6 +5,7 @@
 ### custom ###
 datasets/
 results/
+landmark_sample/
 
 ### Python ###
 # Byte-compiled / optimized / DLL files

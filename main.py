@@ -14,7 +14,7 @@ def main(mode=None):
 
     config = load_config(mode)
     config.MODE = mode
-    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 
     if torch.cuda.is_available():
         config.DEVICE = torch.device("cuda")

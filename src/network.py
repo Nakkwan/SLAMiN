@@ -122,6 +122,7 @@ class LandmarkDetectorModel(nn.Module):
         super(LandmarkDetectorModel, self).__init__()
         self.mbnet = MobileNetV2(points_num=point_num)
         self.mbnet = self.mbnet.to(config.DEVICE)
+        self.config = config
         self.name = 'landmark_detector'
         self.iteration = 0
         self.point_num = point_num
@@ -137,8 +138,10 @@ class LandmarkDetectorModel(nn.Module):
         print('\nsaving %s...\n' % self.name)
         torch.save({
             'iteration': self.iteration,
-            'detector': self.mbnet.state_dict()
+            'detector': self.mbnet.cpu().state_dict()
         }, path)
+        
+        self.mbnet.to(self.config.DEVICE)
 
     def load(self, path):
         if os.path.exists(path):

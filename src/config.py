@@ -5,7 +5,7 @@ class Config(dict):
     def __init__(self, opts, mode):
         with open(opts.config, 'r') as f:
             self._yaml = f.read()
-            self._dict = yaml.load(self._yaml)
+            self._dict = yaml.load(self._yaml, Loader=yaml.FullLoader)
 
         self.modify_param(opts, mode)
 

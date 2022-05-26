@@ -39,11 +39,31 @@ def perpare_sub_floder(output_path):
 def cuda(config, *args):
         return (item.to(config.DEVICE) for item in args)
     
+def generate_landmark_map(landmark_cord, img_size = 256):
+        '''
+        :param landmark_cord: [B,self.config.LANDMARK_POINTS,2] or [self.config.LANDMARK_POINTS,2], tensor or numpy array
+        :param img_size:
+        :return: landmark_img [B, 1, img_size, img_size] or [1, img_size, img_size], tensor or numpy array
+        '''
+
+        if torch.is_tensor(landmark_cord):
+            if landmark_cord.ndimension() == 3:
+                landmark_img = torch.zeros(landmark_cord.shape[0],1,img_size, img_size)
+                for i in range(landmark_cord.shape[0]):
+                    print('landmark_cord[i,:,1]: {}, {}'.format(type(landmark_cord[i,:,1]), landmark_cord[i,:,1]))
+                    landmark_img[i,0,landmark_cord[i,:,1],landmark_cord[i,:,0]] = 1
+            elif landmark_cord.ndimension() == 2:
+                landmark_img = torch.zeros(1,img_size,img_size)
+                landmark_img[0,landmark_cord[:,1],landmark_cord[:,0]] = 1
+
+        return landmark_img
+
+    
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 def main():
     config = load_config()
-    os.makedirs(os.path.join(config.LANDMARK_PATH, config.LANDMARK_VERSION), exist_ok=True)
+    os.makedirs(os.path.join(config.LANDMARK_PATH, config.LANDMARK_VERSION, 'checkpoints'), exist_ok=True)
     if torch.cuda.is_available():
         config.DEVICE = torch.device("cuda")
         torch.backends.cudnn.benchmark = True   # cudnn auto-tuner
@@ -67,8 +87,14 @@ def main():
             model.backward(loss)
             
             print('[{}/{}][{}] loss: {}'.format(epoch, config.LANDMARK_EPOCH, iter, loss))
+        
+        landmark_img = generate_landmark_map(landmark_gen.detach().cpu().type(torch.int32).type(torch.long))
+        
+        if epoch % 10 == 0:
+            model.save(os.path.join(config.LANDMARK_PATH, config.LANDMARK_VERSION, 'checkpoints', 'landmark_{}.pth'.format(epoch)))
             
-        save_image(landmark_gen, os.path.join(config.LANDMARK_PATH, config.LANDMARK_VERSION, 'landmark_epoch-{}_iter-{}.png'.format(epoch, iter)))
+        save_image(landmark_img, os.path.join(config.LANDMARK_PATH, config.LANDMARK_VERSION, 'landmark_epoch-{}_iter-{}.png'.format(epoch, iter)))
+        save_image(inputs, os.path.join(config.LANDMARK_PATH, config.LANDMARK_VERSION, 'landmark_epoch-{}_iter-{}_inputs.png'.format(epoch, iter)))
         
 
 if __name__ == "__main__":
