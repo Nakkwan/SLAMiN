@@ -24,6 +24,7 @@ class Dataset(data.Dataset):
         self.x_idx = [1, 3, 5, 7, 9]
         self.y_idx = [2, 4, 6, 8, 10]
         self.landmark_num = config.STRUCTURE_LANDMARK_NUM
+        self.size = config.DATA_TRAIN_SIZE
 
         if len(self.gt_image_files) == 0:
             raise(RuntimeError("Found 0 images in the input files " + "\n"))
@@ -87,6 +88,8 @@ class Dataset(data.Dataset):
         gt_path = self.gt_image_files[index]
         structure_path = self.structure_image_files[index]
         gt_image = loader(gt_path)
+        gt_width = gt_image.width
+        gt_height = gt_image.height
         structure_image = loader(structure_path)
         transform_param = get_params(gt_image.size, self.transform_opt)
         gt_image, structure_image = transform_image(transform_param, gt_image, structure_image)
@@ -96,6 +99,8 @@ class Dataset(data.Dataset):
         
         if self.csvfile is not None:
             landmark_points = self.load_landmark(index, self.csvfile)
+            landmark_points[:,0] = landmark_points[:,0] / gt_width * self.size
+            landmark_points[:,1] = landmark_points[:,1] / gt_height * self.size
             return input_image, structure_image, gt_image, inpaint_map, landmark_points
         
         else:
