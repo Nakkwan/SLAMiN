@@ -49,7 +49,7 @@ class StructureFlowModel(BaseModel):
         if self.config.MODEL == 1:
             self.s_gen = StructureGen(**self.structure_param)
             self.s_dis = MultiDiscriminator(**self.dis_param)
-            self.s_land = LandmarkDetectorModel(**self.land_param)
+            self.s_land = LandmarkDetectorModel(self.config, **self.land_param)
         # flow model with true input smooth
         elif self.config.MODEL == 2:
             self.f_gen = FlowGen(**self.flow_param)
@@ -64,8 +64,8 @@ class StructureFlowModel(BaseModel):
         self.init()
         
         if self.config.MODEL == 1:
-            LandmarkDetectorModel.load(self.config.PRETRAINED_LANDMARK_PATH)
-            LandmarkDetectorModel.eval()
+            self.s_land.load(path=self.config.PRETRAINED_LANDMARK_PATH)
+            self.s_land.eval()
 
 
     def structure_forward(self, inputs, smooths, maps):
