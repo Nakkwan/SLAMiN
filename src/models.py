@@ -62,6 +62,10 @@ class StructureFlowModel(BaseModel):
 
         self.define_optimizer()
         self.init()
+        
+        if self.config.MODEL == 1:
+            LandmarkDetectorModel.load(self.config.PRETRAINED_LANDMARK_PATH)
+            LandmarkDetectorModel.eval()
 
 
     def structure_forward(self, inputs, smooths, maps):
