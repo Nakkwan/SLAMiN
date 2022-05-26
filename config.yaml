@@ -36,7 +36,7 @@ VGG_STYLE: 250                # texture net parameter of vgg_style loss (Optiona
 VGG_CONTENT: 0.1              # texture net parameter of vgg_content loss (Optional loss on stage_3) 
 
 
-TRAIN_BATCH_SIZE: 8           # batch size
+TRAIN_BATCH_SIZE: 32           # batch size
 DATA_TRAIN_SIZE: 256          # image size for training 
 DATA_TEST_SIZE: False         # image size for testing (False for never resize)
 DATA_FLIP: False              # filp image or not when training 

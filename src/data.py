@@ -61,7 +61,7 @@ class Dataset(data.Dataset):
         return item
 
     def __len__(self):
-        return len(self.gt_image_files) // 10  
+        return len(self.gt_image_files)  
 
 
     def load_file_list(self, flist):

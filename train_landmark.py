@@ -1,5 +1,7 @@
 import torch
 import os
+import numpy as np
+import cv2
 from src.data import Dataset
 from src.network import LandmarkDetectorModel
 from torch.utils.data import DataLoader
@@ -46,20 +48,26 @@ def generate_landmark_map(landmark_cord, img_size = 256):
         :return: landmark_img [B, 1, img_size, img_size] or [1, img_size, img_size], tensor or numpy array
         '''
 
-        if torch.is_tensor(landmark_cord):
-            if landmark_cord.ndimension() == 3:
-                landmark_img = torch.zeros(landmark_cord.shape[0],1,img_size, img_size)
-                for i in range(landmark_cord.shape[0]):
-                    print('landmark_cord[i,:,1]: {}, {}'.format(type(landmark_cord[i,:,1]), landmark_cord[i,:,1]))
-                    landmark_img[i,0,landmark_cord[i,:,1],landmark_cord[i,:,0]] = 1
-            elif landmark_cord.ndimension() == 2:
-                landmark_img = torch.zeros(1,img_size,img_size)
-                landmark_img[0,landmark_cord[:,1],landmark_cord[:,0]] = 1
+        if len(landmark_cord.shape) == 3:
+            landmark_img = np.zeros((landmark_cord.shape[0],3,img_size, img_size), dtype="uint8")
+            for i in range(landmark_cord.shape[0]):
+                img = np.zeros((img_size, img_size, 3), dtype="uint8")
+                for j in range(len(landmark_cord[i,:,0])):
+                    cv2.line(img, (landmark_cord[i,j,0], landmark_cord[i,j,1]), (landmark_cord[i,j,0], landmark_cord[i,j,1]), (255, 0, 0), 5)
+                img = np.moveaxis(img, -1, 0)
+                landmark_img[i] = img
+        elif len(landmark_cord.shape) == 2:
+            landmark_img = np.zeros((1,3,img_size, img_size), dtype="uint8")
+            img = np.zeros((img_size, img_size, 3), dtype="uint8")
+            for i in range(len(landmark_cord)):
+                cv2.line(img, (landmark_cord[i,0], landmark_cord[i,1]), (landmark_cord[i,0], landmark_cord[i,1]), (255, 0, 0), 5)
+            img = np.moveaxis(img, -1, 0)
+            landmark_img[0] = img
 
-        return landmark_img
+        return torch.from_numpy(landmark_img).type(torch.FloatTensor)
 
     
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0, 1'
 
 def main():
     config = load_config()
@@ -88,13 +96,13 @@ def main():
             
             print('[{}/{}][{}] loss: {}'.format(epoch, config.LANDMARK_EPOCH, iter, loss))
         
-        landmark_img = generate_landmark_map(landmark_gen.detach().cpu().type(torch.int32).type(torch.long))
-        
-        if epoch % 10 == 0:
-            model.save(os.path.join(config.LANDMARK_PATH, config.LANDMARK_VERSION, 'checkpoints', 'landmark_{}.pth'.format(epoch)))
-            
+        landmark_img = generate_landmark_map(np.array(landmark_gen.detach().cpu().type(torch.int32)))
+       
         save_image(landmark_img, os.path.join(config.LANDMARK_PATH, config.LANDMARK_VERSION, 'landmark_epoch-{}_iter-{}.png'.format(epoch, iter)))
         save_image(inputs, os.path.join(config.LANDMARK_PATH, config.LANDMARK_VERSION, 'landmark_epoch-{}_iter-{}_inputs.png'.format(epoch, iter)))
+            
+        if epoch % 10 == 0:
+            model.save(os.path.join(config.LANDMARK_PATH, config.LANDMARK_VERSION, 'checkpoints', 'landmark_{}.pth'.format(epoch)))
         
 
 if __name__ == "__main__":
