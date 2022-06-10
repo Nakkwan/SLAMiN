@@ -5,6 +5,7 @@ import shutil
 from src.config import Config
 from src.structure_flow import StructureFlow
 from multiprocessing import Process, freeze_support
+from torch.nn.parallel import DataParallel
 
 def main(mode=None):
     r"""starts the model
@@ -14,7 +15,7 @@ def main(mode=None):
 
     config = load_config(mode)
     config.MODE = mode
-    os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
     if torch.cuda.is_available():
         config.DEVICE = torch.device("cuda")

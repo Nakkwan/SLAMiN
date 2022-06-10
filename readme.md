@@ -12,3 +12,9 @@
     - 이 dataset의 경우 landmark 데이터가 없어서 forward만 하는 validation에 넣었습니다.
 
 6. structure model부분만 건드렸기때문에 model 2, 3의 경우는 확인을 아직 안해봤습니다.
+
+
+
+---
+1. l1_init
+    1. weight 4, 0 
