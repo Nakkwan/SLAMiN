@@ -12,21 +12,21 @@ STEP_SIZE: 100000             # Period of learning rate decay (only used when ch
 GAMMA: 0.5                    # Multiplicative factor of learning rate decay. (only used when choosing "step" as the lr adjusment method)
 INIT_TYPE: xavier             # initialization [gaussian/kaiming/xavier/orthogonal]
 
-SAVE_INTERVAL: 200000             # how many iterations to wait before saving model (0: never)
-SAVE_LATEST: 0               # how many iterations to wait before saving lastest model (0: never)
-SAMPLE_INTERVAL: 10000           # how many iterations to wait before sampling (0: never)
+SAVE_INTERVAL: 200000         # how many iterations to wait before saving model (0: never)
+SAVE_LATEST: 0                # how many iterations to wait before saving lastest model (0: never)
+SAMPLE_INTERVAL: 10000        # how many iterations to wait before sampling (0: never)
 SAMPLE_SIZE: 4                # number of images to sample
-EVAL_INTERVAL: 10000           # how many iterations to wait before model evaluation (0: never)
+EVAL_INTERVAL: 10000          # how many iterations to wait before model evaluation (0: never)
 LOG_INTERVAL: 10              # how many iterations to wait before logging training status (0: never)
 WHICH_ITER: latest            # which iterations to load
 
-DIS_GAN_LOSS: lsgan           # type of gan loss 
+DIS_GAN_LOSS: lsgan           # type of gan loss
 
 STRUCTURE_L1: 4               # structure net parameter of l1 loss  
-STRUCTURE_L1_WEIGHT: 0               # structure net parameter of l1 loss  
+STRUCTURE_L1_WEIGHT: 0        # structure net parameter of l1 loss  
 STRUCTURE_ADV_GEN: 1          # structure net parameter of gan loss  
 STRUCTURE_LANDMARK: 1         # structure net parameter of landmark loss  
-STRUCTURE_LANDMARK_NUM: 5            # structure net parameter of landmark points num
+STRUCTURE_LANDMARK_NUM: 5     # structure net parameter of landmark points num
 STRUCTURE_SIGMA: 7            # structure net parameter of weight L1 loss sigma  
 
 FLOW_ADV_GEN: 1               # texture net parameter of gan loss  
