@@ -365,20 +365,6 @@ class StructureFlowModel(BaseModel):
         if self.f_gen_scheduler is not None:
             self.f_gen_scheduler.step()
 
-        logs = [
-            ("l_f_adv_dis", self.flow_adv_dis_loss.item()),
-            ("l_f_adv_gen", self.flow_adv_gen_loss.item()),
-            ("l_f_l1_gen", self.flow_l1_loss.item()),
-            ("l_f_l1_gaussian_gen", self.flow_l1_loss_weight.item()),
-            ("l_f_total_gen", self.flow_loss.item()),
-        ]
-        if self.use_correction_loss:
-            logs = logs + \
-                [("l_f_correctness_gen", self.flow_correctness_loss.item())]
-        if self.use_vgg_loss:
-            logs = logs + [("l_f_vgg_style", self.vgg_loss_style.item())]
-            logs = logs + [("l_f_vgg_content", self.vgg_loss_content.item())]
-
         ##### Structure part update #####
         self.s_gen.zero_grad()
         self.s_dis.zero_grad()
@@ -438,13 +424,29 @@ class StructureFlowModel(BaseModel):
         if self.s_gen_scheduler is not None:
             self.s_gen_scheduler.step()
 
+
+        # logging
+        
+        logs = [
+            ("l_s_l1_gen", self.structure_l1_loss.item()),
+            ("l_s_l1_gaussian_gen", self.structure_l1_loss_weight.item()),
+            ("l_f_l1_gen", self.flow_l1_loss.item()),
+            ("l_f_l1_gaussian_gen", self.flow_l1_loss_weight.item()),
+            ("l_s_gen", self.structure_gen_loss.item()),
+            ("l_f_gen", self.flow_loss.item()),
+        ]
+        
         logs = logs + [
             ("l_s_adv_dis", self.structure_adv_dis_loss.item()),
             ("l_s_adv_gen", self.structure_adv_gen_loss.item()),
-            ("l_s_l1_gen", self.structure_l1_loss.item()),
-            ("l_s_l1_gaussian_gen", self.structure_l1_loss_weight.item()),
-            ("l_s_adv_gen", self.structure_adv_gen_loss.item()),
-            ("l_s_gen", self.structure_gen_loss.item()),
+            ("l_f_adv_dis", self.flow_adv_dis_loss.item()),
+            ("l_f_adv_gen", self.flow_adv_gen_loss.item()),
         ]
+        if self.use_correction_loss:
+            logs = logs + \
+                [("l_f_correctness_gen", self.flow_correctness_loss.item())]
+        if self.use_vgg_loss:
+            logs = logs + [("l_f_vgg_style", self.vgg_loss_style.item())]
+            logs = logs + [("l_f_vgg_content", self.vgg_loss_content.item())]
 
         return logs

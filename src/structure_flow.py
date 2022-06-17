@@ -96,7 +96,7 @@ class StructureFlow():
                     ("iter", iterations),
                 ] + logs
 
-                progbar.add(len(inputs), values=logs if self.config.VERBOSE else [
+                progbar.add(len(inputs), values=logs[:6] if self.config.VERBOSE else [
                             x for x in logs if not x[0].startswith('l_')])
 
                 # log model
