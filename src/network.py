@@ -52,7 +52,7 @@ class StructureGen(nn.Module):
         self.up_sample=nn.ModuleList()
         self.content_param=nn.ModuleList()
 
-        self.input_layer = Conv2dBlock(input_dim*2+1, dim, 7, 1, 3, norm, activ, pad_type, use_sn=use_sn)
+        self.input_layer = Conv2dBlock(input_dim+1, dim, 7, 1, 3, norm, activ, pad_type, use_sn=use_sn)
         self.down_sample += [nn.Sequential(
             Conv2dBlock(dim, 2*dim, 4, 2, 1, norm, activ, pad_type, use_sn=use_sn),
             Conv2dBlock(2*dim, 2*dim, 5, 1, 2, norm, activ, pad_type, use_sn=use_sn))]

@@ -157,7 +157,7 @@ class StructureFlow():
                 inputs, smooths, gts, maps = self.cuda(*items)
                 if model == 1:
                     outputs_structure = self.flow_model.structure_forward(
-                        inputs, smooths, maps)
+                        inputs, maps)
                     psnr, ssim, l1 = self.metrics(outputs_structure, smooths)
                     logs.append(('psnr', psnr.item()))
                     psnr_list.append(psnr.item())
@@ -173,7 +173,7 @@ class StructureFlow():
                 # inpaint with structure model
                 elif model == 3:
                     smooth_stage_1 = self.flow_model.structure_forward(
-                        inputs, smooths, maps)
+                        inputs, maps)
                     outputs, flow_maps = self.flow_model.flow_forward(
                         inputs, smooth_stage_1, maps)
                     psnr, ssim, l1 = self.metrics(outputs, gts)
@@ -220,7 +220,7 @@ class StructureFlow():
                 # structure model
                 if model == 1:
                     outputs = self.flow_model.structure_forward(
-                        inputs, smooths, maps)
+                        inputs, maps)
                     outputs_merged = (outputs * maps) + (smooths * (1 - maps))
 
                 # flow model
@@ -232,7 +232,7 @@ class StructureFlow():
                 # inpaint with structure model / joint model
                 else:
                     smooth_stage_1 = self.flow_model.structure_forward(
-                        inputs, smooths, maps)
+                        inputs, maps)
                     outputs, flow_maps = self.flow_model.flow_forward(
                         inputs, smooth_stage_1, maps)
                     outputs_merged = (outputs * maps) + (gts * (1 - maps))

@@ -69,9 +69,9 @@ class StructureFlowModel(BaseModel):
             self.s_land.load(self.config.PRETRAINED_LANDMARK_PATH)
             self.s_land.eval()
 
-    def structure_forward(self, inputs, smooths, maps):
-        smooths_input = smooths*(1-maps)
-        outputs = self.s_gen(torch.cat((inputs, smooths_input, maps), dim=1))
+    def structure_forward(self, inputs, maps):
+        # smooths_input = smooths*(1-maps)
+        outputs = self.s_gen(torch.cat((inputs, maps), dim=1))
         return outputs
 
     def flow_forward(self, inputs, stage_1, maps):
@@ -81,7 +81,7 @@ class StructureFlowModel(BaseModel):
     def sample(self, inputs, smooths, gts, maps):
         with torch.no_grad():
             if self.config.MODEL == 1:
-                outputs = self.structure_forward(inputs, smooths, maps)
+                outputs = self.structure_forward(inputs, maps)
                 result = [inputs, smooths, gts, maps, outputs]
                 flow = None
             elif self.config.MODEL == 2:
@@ -92,7 +92,7 @@ class StructureFlowModel(BaseModel):
                         1)/30, flow[:, 1, :, :].unsqueeze(1)/30]
 
             elif self.config.MODEL == 3:
-                smooth_stage_1 = self.structure_forward(inputs, smooths, maps)
+                smooth_stage_1 = self.structure_forward(inputs, maps)
                 outputs, flow = self.flow_forward(inputs, smooth_stage_1, maps)
                 result = [inputs, smooths, gts, maps, smooth_stage_1, outputs]
                 if flow is not None:
@@ -118,7 +118,7 @@ class StructureFlowModel(BaseModel):
 
         self.s_gen.zero_grad()
         self.s_dis.zero_grad()
-        outputs = self.structure_forward(inputs, smooths, maps)
+        outputs = self.structure_forward(inputs, maps)
 
         # Update discriminator for structure part
         dis_loss = 0
@@ -297,7 +297,7 @@ class StructureFlowModel(BaseModel):
         """
         self.iterations += 1
 
-        structure_outputs = self.structure_forward(inputs, smooths, maps)
+        structure_outputs = self.structure_forward(inputs, maps)
         outputs, flow_maps = self.flow_forward(
             inputs, structure_outputs.detach(), maps)
 
@@ -424,9 +424,8 @@ class StructureFlowModel(BaseModel):
         if self.s_gen_scheduler is not None:
             self.s_gen_scheduler.step()
 
-
         # logging
-        
+
         logs = [
             ("l_s_l1_gen", self.structure_l1_loss.item()),
             ("l_s_l1_gaussian_gen", self.structure_l1_loss_weight.item()),
@@ -435,7 +434,7 @@ class StructureFlowModel(BaseModel):
             ("l_s_gen", self.structure_gen_loss.item()),
             ("l_f_gen", self.flow_loss.item()),
         ]
-        
+
         logs = logs + [
             ("l_s_adv_dis", self.structure_adv_dis_loss.item()),
             ("l_s_adv_gen", self.structure_adv_gen_loss.item()),
