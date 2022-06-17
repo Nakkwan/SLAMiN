@@ -5,7 +5,6 @@ import shutil
 from src.config import Config
 from src.structure_flow import StructureFlow
 from multiprocessing import Process, freeze_support
-from torch.nn.parallel import DataParallel
 
 def main(mode=None):
     r"""starts the model

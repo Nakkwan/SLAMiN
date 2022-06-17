@@ -62,7 +62,7 @@ class Dataset(data.Dataset):
         return item
 
     def __len__(self):
-        return len(self.gt_image_files) // 2
+        return len(self.gt_image_files)
 
 
     def load_file_list(self, flist):
@@ -139,8 +139,6 @@ class Dataset(data.Dataset):
         else:
             raise(RuntimeError("No such mask type: %s"%self.mask_type))
 
-############################################################ fix #####################################################################
-
     def load_landmark(self, index, csvfile):
         df = csvfile.iloc[index]
         x_coord = df.values[self.x_idx]
@@ -149,8 +147,6 @@ class Dataset(data.Dataset):
         landmark_points = np.concatenate([x_coord, y_coord]).reshape(2, self.landmark_num).T.astype(np.float)
         
         return torch.from_numpy(landmark_points)
-
-############################################################ fix #####################################################################
 
     def load_name(self, index, add_mask_name=False):
         name = self.gt_image_files[index]

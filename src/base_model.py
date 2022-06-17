@@ -17,7 +17,7 @@ class BaseModel(nn.Module):
     def save(self, which_epoch):
         """Save all the networks to the disk"""
         for net_name in self.net_name:
-            if hasattr(self, net_name) and not(self.config.MODEL == 3 and 's_' in net_name):
+            if hasattr(self, net_name):
                 sub_net = getattr(self, net_name)
                 save_filename = '%s_net_%s.pth' % (which_epoch, net_name)
                 save_path = os.path.join(self.checkpoints_path, save_filename)
