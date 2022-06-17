@@ -5,7 +5,8 @@
 ### custom ###
 datasets/
 results/
-landmark_sample/
+landmark_sample/0/
+scripts/
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
@@ -195,3 +196,4 @@ cython_debug/
 *.code-workspace
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,python
+scripts/matlab/generate_structure_images.m
