@@ -1,4 +1,4 @@
-MODEL: 2 # 1: structure model, 2: inpaint model, 3: structure-inpaint model
+MODEL: 3 # 1: structure model, 2: inpaint model, 3: structure-inpaint model
 VERBOSE: 1 # turns on verbose mode in the output console
 GPU: [0] # gpu ids
 
