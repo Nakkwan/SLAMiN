@@ -48,12 +48,11 @@ def load_config(mode=None):
     parser.add_argument("--resume_all", action="store_true", help='load model from checkpoints')
     parser.add_argument("--remove_log", action="store_true", help='remove previous tensorboard log files')
 
-
     if mode == 'test':
-        parser.add_argument('--input', type=str, help='path to the input image files')
-        parser.add_argument('--mask', type=str, help='path to the mask files')
-        parser.add_argument('--structure', type=str, help='path to the structure files')
-        parser.add_argument('--output', type=str, help='path to the output directory')
+        parser.add_argument('--input', type=str, default="datasets/test/input", help='path to the input image files')
+        parser.add_argument('--mask', type=str, default="datasets/test/masks" ,help='path to the mask files')
+        parser.add_argument('--structure', type=str, default="datasets/test/input", help='path to the structure files')
+        parser.add_argument('--output', type=str, default="test_sample", help='path to the output directory')
         parser.add_argument('--model', type=int, default=3, help='which model to test')
     
     opts = parser.parse_args()
@@ -66,7 +65,6 @@ def load_config(mode=None):
         shutil.copyfile(opts.config, config_dir)
         
     return config
-
 
 def perpare_sub_floder(output_path):
     img_dir = os.path.join(output_path, 'images')

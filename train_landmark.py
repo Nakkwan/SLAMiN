@@ -67,7 +67,7 @@ def generate_landmark_map(landmark_cord, img_size = 256):
         return torch.from_numpy(landmark_img).type(torch.FloatTensor)
 
     
-os.environ['CUDA_VISIBLE_DEVICES'] = '0, 1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 def main():
     config = load_config()

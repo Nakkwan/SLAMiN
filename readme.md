@@ -1,42 +1,32 @@
-1. python main.py --name=[저장될 파일, 실험이랑] --path=[결과 파일 경로 (defaults:results)]
-2. config.yaml파일 아래에 각 파일 경로 설정
-3. 맨 아래 landmark의 경우 landmark만 따로 돌릴 시에 설정해주면 됩니다
-4. config의 STRUCTURE_L1_WEIGHT과 landmark관련 변수들은 추가했는데 기본 L1의 weight가 4로 되어있어서, 일단 blur 넣은거랑 기본이랑 반반해서 2씩 줬습니다
+## Setting
+flow structure부분에서 flow를 흘려주는 부분에 cuda package에 대한 부분을 설정해주어야합니다. 
+현재 돌리는 세팅의 경우 RTX 3090, pytorch 1.8, python 3.8, CUDA 11.1 입니다.
+GPU와 환경마다 맞는 설정이 다르기 때문에
+```python 
+cd ./resample2d_package
+python setup.py install --user
+```
+을 통해서 해당 package를 깔아줄 때에 gpu의 architecture에 맞게 nvcc_args를 변경해주어야합니다. 
+대부분의 환경에서 70, 75, 86 중 하나로 설정하면 진행이 가능했습니다.
 
-    - 그냥 blur만 하면 모서리 부분은 아예 안들어가서 기본 L1이랑 합쳤습니다
-    - blur weight는 model.py 파일에서 조절하시면 됩니다
-    - 자잘한거 말고 추가한 큰 블럭들은 ####### fix ######### 같은 칸 안에 넣었습니다
-    - blur weight의 정도는 mask3이라고 되어있는 이미지에 임의로 뽑아봤습니다.
-
-5. validation의 경우 저희에게 교수님이 주신 16285개 들어있는 train dataset으로 생각하고 짰습니다
-
-    - 이 dataset의 경우 landmark 데이터가 없어서 forward만 하는 validation에 넣었습니다.
-
-6. structure model부분만 건드렸기때문에 model 2, 3의 경우는 확인을 아직 안해봤습니다.
+1. 훈련에 관한 모든 변수 및 설정들은 config.yaml에 들어있습니다
+2. training dataset 경로 설정의 경우 config.yaml의 아랫쪽에서 설정할 수 있습니다. (defaults: ./datasets/ ~)
+3. Ablation을 위한 model1,2를 돌릴지, 전체 모델인 model3를 돌릴지에 대한 설정은 config.yaml의 맨위 MDEOL 변수를 설정함으로써 변경할 수 있습니다. (defaults: 3) 
+## Training
+```python
+python main.py --name=[output name]
+```
 
 ---
+1. Test의 경우 main.py 파일의 load_config함수 안에서 test에 관한 폴더 경로 설정을 할 수 있습니다.
+## Test
+```python
+python test.py --name=[output name]
+```
 
-1. strucutre
-
--   l1_init
-
-    1. weight 4, 0
-
--   l1_2_4_7
-
-    1. weight 2, 4
-    2. sigma 7
-
--   l1_2_4_15
-
-    1. weight 2, 4
-    2. sigma 15
-
--   l1_struc_init
-
-    1. weight 4, 0
-    2. sigma
-
--   l1_struc_2_4_15
-    1. weight 2, 4
-    2. sigma 15
+---
+1. landmark에 대한 loss를 측정해야하기 때문에 pre-training을 진행했습니다.
+## Landmark
+```python
+python train_landmark.py --name=[output name]
+```
