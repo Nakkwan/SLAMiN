@@ -42,7 +42,7 @@ def load_config(mode=None):
     r"""loads model config 
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--name', type=str, help='output model name.')
+    parser.add_argument('--name', type=str, default='team2', help='output model name.')
     parser.add_argument('--config', type=str, default='config.yaml', help='Path to the config file.')
     parser.add_argument('--path', type=str, default='./results', help='outputs path')
     parser.add_argument("--resume_all", action="store_true", help='load model from checkpoints')
