@@ -1,6 +1,6 @@
 # SLAMiN 
-    - UNIST DGMS Final Project Team2
-    - Code is implemented based on [structureflow](https://github.com/RenYurui/StructureFlow)
+- UNIST DGMS Final Project Team2
+- Code is implemented based on [structureflow](https://github.com/RenYurui/StructureFlow)
  
 ## Inpainting Results Example
 
