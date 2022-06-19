@@ -38,7 +38,7 @@ python setup.py install --user
     DATA_VAL_MASK:
     ```
 2. Landmark에 관한 csv파일의 경우 [Kaggle](https://www.kaggle.com/datasets/jessicali9530/celeba-dataset?select=list_landmarks_align_celeba.csv)의 landmark를 사용했습니다.
-2. name의 경우 results와 checkpoint에 저장될 폴더의 이름입니다. (defaults: team2)
+3. name의 경우 results와 checkpoint에 저장될 폴더의 이름입니다. (defaults: team2)
 ```python
 python main.py --name=[output name]
 ```
@@ -53,8 +53,8 @@ python test.py --name=[output name]
 ```
 
 ---
-1. landmark에 대한 loss를 측정해야하기 때문에 pre-training을 진행했습니다.
 ## Landmark
+1. landmark에 대한 loss를 측정해야하기 때문에 pre-training을 진행했습니다.
 ```python
 python train_landmark.py --name=[output name]
 ```
