@@ -2,7 +2,7 @@ function generate_structure_images(dataset_path, output_path)
     addpath('code');
     image_list = dirPlus(dataset_path, 'FileFilter', '\.(jpg|png|tif)$');
     num_image = numel(image_list);
-    for i=9000:num_image
+    for i=1:num_image
        image_name = image_list{i};
        image = im2double(imread(image_name));
        S = tsmooth(image, 0.015, 3, 0.001, 3);
