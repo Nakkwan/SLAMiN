@@ -8,7 +8,6 @@ import torchvision.transforms.functional as transFunc
 import random
 import numpy as np
 import torch.nn.functional as F
-import math
 import scipy.io as scio
 import torch.utils.data as data
 from PIL import Image
@@ -16,7 +15,9 @@ from torch.utils.data import DataLoader
 import cv2
 import pandas as pd
 
-## TODO: choose with or without transformation at test mode
+# TODO: choose with or without transformation at test mode
+
+
 class Dataset(data.Dataset):
     def __init__(self, gt_file, structure_file, config, mask_file=None, landmark_file=None):
         self.gt_image_files = self.load_file_list(gt_file)
@@ -31,23 +32,23 @@ class Dataset(data.Dataset):
 
         if config.MODE == 'test':
             self.transform_opt = {'crop': False, 'flip': False,
-                            'resize': config.DATA_TEST_SIZE, 'random_load_mask': False}
-            config.DATA_MASK_TYPE == 'from_file' if mask_file is not None else config.DATA_MASK_TYPE 
+                                  'resize': config.DATA_TEST_SIZE, 'random_load_mask': False}
+            config.DATA_MASK_TYPE == 'from_file' if mask_file is not None else config.DATA_MASK_TYPE
         else:
             self.transform_opt = {'crop': config.DATA_CROP, 'flip': config.DATA_FLIP,
-                            'resize': config.DATA_TRAIN_SIZE, 'random_load_mask': True}
-                            
+                                  'resize': config.DATA_TRAIN_SIZE, 'random_load_mask': True}
+
         self.mask_type = config.DATA_MASK_TYPE
-        # generate random rectangle mask 
+        # generate random rectangle mask
         if self.mask_type == 'random_bbox':
             self.mask_setting = config.DATA_RANDOM_BBOX_SETTING
-        # generate random free form mask 
+        # generate random free form mask
         elif self.mask_type == 'random_free_form':
             self.mask_setting = config.DATA_RANDOM_FF_SETTING
         # read masks from files
         elif self.mask_type == 'from_file':
             self.mask_image_files = self.load_file_list(mask_file)
-        
+
         if landmark_file is not None:
             self.csvfile = pd.read_csv(landmark_file)
         else:
@@ -64,7 +65,6 @@ class Dataset(data.Dataset):
     def __len__(self):
         return len(self.gt_image_files)
 
-
     def load_file_list(self, flist):
         if isinstance(flist, list):
             return flist
@@ -72,7 +72,8 @@ class Dataset(data.Dataset):
         # flist: image file path, image directory path, text file flist path
         if isinstance(flist, str):
             if os.path.isdir(flist):
-                flist = list(glob.glob(flist + '/*.jpg')) + list(glob.glob(flist + '/*.png'))
+                flist = list(glob.glob(flist + '/*.jpg')) + \
+                    list(glob.glob(flist + '/*.png'))
                 flist.sort()
                 return flist
 
@@ -81,8 +82,7 @@ class Dataset(data.Dataset):
                     return np.genfromtxt(flist, dtype=np.str, encoding='utf-8')
                 except:
                     return [flist]
-        return []        
-
+        return []
 
     def load_item(self, index):
         gt_path = self.gt_image_files[index]
@@ -92,20 +92,23 @@ class Dataset(data.Dataset):
         gt_height = gt_image.height
         structure_image = loader(structure_path)
         transform_param = get_params(gt_image.size, self.transform_opt)
-        gt_image, structure_image = transform_image(transform_param, gt_image, structure_image)
+        gt_image, structure_image = transform_image(
+            transform_param, gt_image, structure_image)
 
         inpaint_map = self.load_mask(index, gt_image)
+
         input_image = gt_image*(1-inpaint_map)
-        
+
         if self.csvfile is not None:
             landmark_points = self.load_landmark(index, self.csvfile)
-            landmark_points[:,0] = landmark_points[:,0] / gt_width * self.size
-            landmark_points[:,1] = landmark_points[:,1] / gt_height * self.size
+            landmark_points[:, 0] = landmark_points[:, 0] / \
+                gt_width * self.size
+            landmark_points[:, 1] = landmark_points[:, 1] / \
+                gt_height * self.size
             return input_image, structure_image, gt_image, inpaint_map, landmark_points
-        
+
         else:
             return input_image, structure_image, gt_image, inpaint_map
-
 
     def load_mask(self, index, img):
         _, w, h = img.shape
@@ -116,7 +119,7 @@ class Dataset(data.Dataset):
                 bbox = random_bbox(self.mask_setting, image_shape)
                 bboxs.append(bbox)
             mask = bbox2mask(bboxs, image_shape, self.mask_setting)
-            return  torch.from_numpy(mask)
+            return torch.from_numpy(mask)
 
         elif self.mask_type == 'random_free_form':
             mask = random_ff_mask(self.mask_setting, image_shape)
@@ -129,42 +132,42 @@ class Dataset(data.Dataset):
                 if random.random() > 0.5:
                     mask = transFunc.hflip(mask)
                 if random.random() > 0.5:
-                    mask = transFunc.vflip(mask)  
+                    mask = transFunc.vflip(mask)
             else:
                 mask = gray_loader(self.mask_image_files[index])
-            mask = transFunc.resize(mask, size=image_shape) 
-            mask = transFunc.to_tensor(mask)    
+            mask = transFunc.resize(mask, size=image_shape)
+            mask = transFunc.to_tensor(mask)
             mask = (mask > 0).float()
+            mask = 1 - mask
             return mask
         else:
-            raise(RuntimeError("No such mask type: %s"%self.mask_type))
+            raise(RuntimeError("No such mask type: %s" % self.mask_type))
 
     def load_landmark(self, index, csvfile):
         df = csvfile.iloc[index]
         x_coord = df.values[self.x_idx]
         y_coord = df.values[self.y_idx]
-        
-        landmark_points = np.concatenate([x_coord, y_coord]).reshape(2, self.landmark_num).T.astype(np.float)
-        
+
+        landmark_points = np.concatenate([x_coord, y_coord]).reshape(
+            2, self.landmark_num).T.astype(np.float)
+
         return torch.from_numpy(landmark_points)
 
     def load_name(self, index, add_mask_name=False):
         name = self.gt_image_files[index]
-        name = os.path.basename(name) 
+        name = os.path.basename(name)
 
         if not add_mask_name:
             return name
         else:
-            if len(self.mask_image_files)==0:
+            if len(self.mask_image_files) == 0:
                 return name
             else:
                 mask_name = os.path.basename(self.mask_image_files[index])
-                mask_name, _ = os.path.splitext(mask_name) 
-                name, ext = os.path.splitext(name)                               
+                mask_name, _ = os.path.splitext(mask_name)
+                name, ext = os.path.splitext(name)
                 name = name+'_'+mask_name+ext
-                return name 
-
-
+                return name
 
     def create_iterator(self, batch_size):
         while True:
@@ -175,9 +178,8 @@ class Dataset(data.Dataset):
             )
 
             for item in sample_loader:
-                yield item 
-                
-        
+                yield item
+
 
 def random_bbox(config, shape):
     """Generate a random tlhw with configuration.
@@ -199,7 +201,8 @@ def random_bbox(config, shape):
     w = width
     return (t, l, h, w)
 
-def random_ff_mask( config, shape):
+
+def random_ff_mask(config, shape):
     """Generate a random free form mask with configuration.
 
     Args:
@@ -210,9 +213,10 @@ def random_ff_mask( config, shape):
         tuple: (top, left, height, width)
     """
 
-    h,w = shape
-    mask = np.zeros((h,w))
-    num_v = 12+np.random.randint(config['mv']) #tf.random_uniform([], minval=0, maxval=config.MAXVERTEX, dtype=tf.int32)
+    h, w = shape
+    mask = np.zeros((h, w))
+    # tf.random_uniform([], minval=0, maxval=config.MAXVERTEX, dtype=tf.int32)
+    num_v = 12+np.random.randint(config['mv'])
 
     for i in range(num_v):
         start_x = np.random.randint(w)
@@ -232,7 +236,7 @@ def random_ff_mask( config, shape):
     return mask.reshape((1,)+mask.shape).astype(np.float32)
 
 
-def bbox2mask( bboxs, shape, config):
+def bbox2mask(bboxs, shape, config):
     """Generate mask tensor from bbox.
 
     Args:
@@ -245,26 +249,28 @@ def bbox2mask( bboxs, shape, config):
 
     """
     height, width = shape
-    mask = np.zeros(( height, width), np.float32)
-    #print(mask.shape)
+    mask = np.zeros((height, width), np.float32)
+    # print(mask.shape)
     for bbox in bboxs:
         if config['random_size']:
             h = int(0.1*bbox[2])+np.random.randint(int(bbox[2]*0.2+1))
             w = int(0.1*bbox[3])+np.random.randint(int(bbox[3]*0.2)+1)
         else:
-            h=0
-            w=0
+            h = 0
+            w = 0
         mask[bbox[0]+h:bbox[0]+bbox[2]-h,
              bbox[1]+w:bbox[1]+bbox[3]-w] = 1.
     #print("after", mask.shape)
-    return mask.reshape((1,)+mask.shape).astype(np.float32) 
-      
+    return mask.reshape((1,)+mask.shape).astype(np.float32)
 
-def gray_loader( path):
+
+def gray_loader(path):
     return Image.open(path)
 
-def loader( path):
+
+def loader(path):
     return Image.open(path).convert('RGB')
+
 
 def get_params(size, transform_opt):
     w, h = size
@@ -274,26 +280,28 @@ def get_params(size, transform_opt):
         flip = False
     if transform_opt['crop']:
         transform_crop = transform_opt['crop'] \
-        if w>=transform_opt['crop'][0] and h>=transform_opt['crop'][1] else [h, w]
+            if w >= transform_opt['crop'][0] and h >= transform_opt['crop'][1] else [h, w]
         x = random.randint(0, np.maximum(0, w - transform_crop[0]))
         y = random.randint(0, np.maximum(0, h - transform_crop[1]))
         crop = [x, y, transform_crop[0], transform_crop[1]]
     else:
         crop = False
     if transform_opt['resize']:
-        resize = [transform_opt['resize'], transform_opt['resize'],]
+        resize = [transform_opt['resize'], transform_opt['resize'], ]
     else:
         resize = False
     param = {'crop': crop, 'flip': flip, 'resize': resize}
     return param
 
+
 def transform_image(transform_param, gt_image, structure_image, normalize=True, toTensor=True):
     transform_list = []
 
     if transform_param['crop']:
-        crop_position = transform_param['crop'][:2]  
-        crop_size = transform_param['crop'][2:]  
-        transform_list.append(transforms.Lambda(lambda img: __crop(img, crop_position, crop_size)))
+        crop_position = transform_param['crop'][:2]
+        crop_size = transform_param['crop'][2:]
+        transform_list.append(transforms.Lambda(
+            lambda img: __crop(img, crop_position, crop_size)))
     if transform_param['resize']:
         transform_list.append(transforms.Resize(transform_param['resize']))
     if transform_param['flip']:
@@ -305,14 +313,15 @@ def transform_image(transform_param, gt_image, structure_image, normalize=True, 
     if normalize:
         transform_list += [transforms.Normalize((0.5, 0.5, 0.5),
                                                 (0.5, 0.5, 0.5))]
-    trans = transforms.Compose(transform_list)  
+    trans = transforms.Compose(transform_list)
     if gt_image.size != structure_image.size:
         structure_image = transFunc.resize(structure_image, size=gt_image.size)
 
     gt_image = trans(gt_image)
     structure_image = trans(structure_image)
 
-    return gt_image, structure_image  
+    return gt_image, structure_image
+
 
 def __crop(img, pos, size):
     ow, oh = img.size
@@ -320,9 +329,8 @@ def __crop(img, pos, size):
     tw, th = size
     return img.crop((x1, y1, x1 + tw, y1 + th))
 
+
 def __flip(img, flip):
     if flip:
         return img.transpose(Image.FLIP_LEFT_RIGHT)
     return img
-
-

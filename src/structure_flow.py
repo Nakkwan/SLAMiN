@@ -238,7 +238,7 @@ class StructureFlow():
                     outputs_merged = (outputs * maps) + (gts * (1 - maps))
 
                 outputs_merged = self.postprocess(outputs_merged)*255.0
-                inputs_show = inputs + maps
+                inputs_show = inputs
 
                 for i in range(outputs_merged.size(0)):
                     name = test_dataset.load_name(index, self.debug)

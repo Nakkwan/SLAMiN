@@ -1,6 +1,7 @@
 import os
 import yaml
 
+
 class Config(dict):
     def __init__(self, opts, mode):
         with open(opts.config, 'r') as f:
@@ -9,7 +10,6 @@ class Config(dict):
 
         self.modify_param(opts, mode)
 
- 
     def __getattr__(self, name):
         if self._dict.get(name) is not None:
             return self._dict[name]
@@ -23,7 +23,6 @@ class Config(dict):
         print('---------------------------------')
         print('')
 
-
     def modify_param(self, opts, mode):
         self._dict['PATH'] = opts.path
         self._dict['NAME'] = opts.name
@@ -35,3 +34,6 @@ class Config(dict):
             self._dict['DATA_TEST_STRUCTURE'] = opts.structure
             self._dict['DATA_TEST_RESULTS'] = opts.output
             self._dict['MODEL'] = opts.model
+
+            if opts.mask is not None:
+                self._dict['DATA_MASK_TYPE'] = 'from_file'

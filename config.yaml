@@ -13,7 +13,7 @@ INIT_TYPE: xavier # initialization [gaussian/kaiming/xavier/orthogonal]
 
 SAVE_INTERVAL: 50000 # how many iterations to wait before saving model (0: never)
 SAVE_LATEST: 10000 # how many iterations to wait before saving lastest model (0: never)
-SAMPLE_INTERVAL: 10000 # how many iterations to wait before sampling (0: never)
+SAMPLE_INTERVAL: 2000 # how many iterations to wait before sampling (0: never)
 SAMPLE_SIZE: 4 # number of images to sample
 EVAL_INTERVAL: 10000 # how many iterations to wait before model evaluation (0: never)
 LOG_INTERVAL: 10 # how many iterations to wait before logging training status (0: never)
@@ -47,7 +47,7 @@ DATA_RANDOM_BBOX_SETTING: # parameters for random_bbox
     margin: [0, 0] # minimum distance from the image boundary
     num: 3
 DATA_RANDOM_FF_SETTING: #parameters for random_free_form
-    mv: 40
+    mv: 30
     ma: 4.0
     ml: 25
     mbw: 15
